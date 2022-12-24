@@ -14,7 +14,7 @@ class AuthController extends Controller
         $this->middleware('auth:api', ['except' => ['register','login', 'refresh', 'logout']]);
     }
     /**
-     * Get a JWT via given credentials.
+     * Get a JWT via given credentials.s
      *
      * @param  Request  $request
      * @return Response
@@ -29,10 +29,12 @@ class AuthController extends Controller
 
         $credentials = $request->only(['email', 'password']);
 
+        // if (! $token = Auth::attempt($credentials)) {
+        //     return response()->json(['message' => 'Unauthorized'], 401);
+        // }
         if (! $token = Auth::attempt($credentials)) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+            return response()->json(['message' => 'Sorry, your email or password was incorrect']);
         }
-
         return $this->respondWithToken($token);
     }
 
@@ -44,6 +46,12 @@ class AuthController extends Controller
             'email' => 'required|email|string',
             'password' => 'required|string',
         ]);
+
+        if (User::where('email', '=', $request->input('email'))->exists()) {
+            return 'Email already exist';  
+        }
+        // else
+        //     return 'Not exist';
 
         $user = User::create([
             'name' => $request->name,
@@ -104,4 +112,5 @@ class AuthController extends Controller
             'expires_in' => auth()->factory()->getTTL() * 60 * 24
         ]);
     }
+    
 }
